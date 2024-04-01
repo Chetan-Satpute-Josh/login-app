@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import { RouterProvider } from "react-router-dom";
+import { CssBaseline, ThemeProvider } from "@mui/material";
+
+import LoadingScreen from "./screens/LoadingScreen";
+import router from "./lib/router";
+import theme from "./lib/theme";
+import AuthContext from "./contexts/AuthContext";
+import LocalStorage from "./services/localStorage";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const authContext = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const storedToken = LocalStorage.getItem(LocalStorage.AUTH_TOKEN);
+
+    const [, setAuthToken] = authContext;
+    setAuthToken(storedToken);
+
+    setIsLoading(false);
+  }, [authContext]);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <AuthContext.Provider value={authContext}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <RouterProvider router={router} />
+      </ThemeProvider>
+    </AuthContext.Provider>
+  );
 }
 
-export default App
+export default App;
